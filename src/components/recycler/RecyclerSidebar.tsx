@@ -77,39 +77,33 @@ export function RecyclerSidebar({ active, onNavigate }: RecyclerSidebarProps) {
         </nav>
       </div>
 
-      {/* Bottom Actions: Switch to Collector, Reset Demo, Exit */}
+      {/* Bottom Actions: Reset Demo, Exit to Main Menu */}
       <div className="space-y-2 pt-4 border-t border-gray-800">
         <button
-          onClick={() => setRole('collector')}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-green-400 bg-green-950/40 hover:bg-green-950/70 border border-green-800/40 transition-colors"
-          title="Switch directly to kabadiwala / collector view"
+          onClick={() => {
+            if (window.confirm('Return to main menu and exit recycler portal?')) {
+              setRole(null);
+            }
+          }}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black text-red-300 bg-red-950/80 hover:bg-red-900 border border-red-800 transition-colors shadow-xs"
+          title="Exit to Main Menu"
         >
-          <Smartphone className="w-4 h-4" />
-          Switch to Collector App
+          <LogOut className="w-4 h-4 text-red-400" />
+          <span>{t('main_menu')} ({t('logout_btn')})</span>
         </button>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              if (window.confirm('Reset demo data to initial state?')) {
-                resetDemo();
-              }
-            }}
-            className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-            title="Reset demo data"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset
-          </button>
-
-          <button
-            onClick={() => setRole(null)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            {t('exit_demo')}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            if (window.confirm('Reset demo data to initial state?')) {
+              resetDemo();
+            }
+          }}
+          className="w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 hover:text-white transition-colors border border-gray-700"
+          title="Reset demo data"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Reset Demo State
+        </button>
       </div>
     </aside>
   );
@@ -143,12 +137,16 @@ export function RecyclerMobileNav({ active, onNavigate }: RecyclerSidebarProps) 
           );
         })}
         <button
-          onClick={() => setRole('collector')}
-          className="flex flex-col items-center gap-0.5 px-2 py-1 text-green-400"
-          title="Switch to Collector"
+          onClick={() => {
+            if (window.confirm('Return to main menu?')) {
+              setRole(null);
+            }
+          }}
+          className="flex flex-col items-center gap-0.5 px-2 py-1 text-red-400"
+          title="Return to Main Menu"
         >
-          <Smartphone className="w-5 h-5" />
-          <span className="text-[10px] font-semibold">Collector</span>
+          <LogOut className="w-5 h-5" />
+          <span className="text-[10px] font-semibold">{t('main_menu')}</span>
         </button>
       </div>
     </div>

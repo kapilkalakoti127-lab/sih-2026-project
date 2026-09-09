@@ -19,7 +19,11 @@ import { MATERIAL_CATEGORIES } from '@/data/mockData';
 import type { MaterialCategory } from '@/types';
 import { getAiPriceIntelligence, type PriceIntelligenceResult } from '@/services/aiService';
 
-export function PriceBoard() {
+interface PriceBoardProps {
+  onBack?: () => void;
+}
+
+export function PriceBoard({ onBack }: PriceBoardProps = {}) {
   const { t, prices, language } = useApp();
   const [selectedMaterial, setSelectedMaterial] = useState<MaterialCategory>('PCB');
   const [priceIntel, setPriceIntel] = useState<PriceIntelligenceResult | null>(null);
@@ -48,16 +52,17 @@ export function PriceBoard() {
 
   const getSpeechText = () => {
     const formalRate = priceIntel?.authorized_fair_rate_per_kg || currentPrice.referencePricePerKg;
-    const informalRate = priceIntel?.informal_dealer_rate_per_kg || Math.round(currentPrice.referencePricePerKg * 0.8);
-    const gain = priceIntel?.percentage_gain || 25;
+    const avgRate = priceIntel?.average_market_price_per_kg || Math.round(formalRate * 0.95);
+    const informalRate = priceIntel?.informal_dealer_rate_per_kg || Math.round(formalRate * 0.8);
+    const gain = priceIntel?.percentage_gain || 28;
 
     if (language === 'hi') {
-      return `${currentPrice.material} का कानूनी अधिकृत भाव ₹${formalRate} प्रति किलो है। लोकल कबाड़ी सिर्फ ₹${informalRate} देते हैं। सरकारी रीसाइक्लिंग से आपको ${gain}% ज्यादा कमाई मिलती है।`;
+      return `${t(currentPrice.material)} का आज का अधिकृत रीसाइक्लिंग भाव ₹${formalRate} प्रति किलो है, औसत बाजार भाव ₹${avgRate} है। लोकल कबाड़ी सिर्फ ₹${informalRate} देता है। कानूनी रीसाइक्लिंग से आपको ${gain}% अधिक नकद मिलेगा।`;
     }
     if (language === 'mr') {
-      return `${currentPrice.material} चा अधिकृत कायदेशीर भाव ₹${formalRate} प्रति किलो आहे. स्थानिक भंगार व्यापारी फक्त ₹${informalRate} देतात. अधिकृत रीसायकलिंगमुळे तुम्हाला ${gain}% जास्त नफा मिळतो.`;
+      return `${t(currentPrice.material)} चा आजचा अधिकृत सरकारी भाव ₹${formalRate} प्रति किलो आहे, सरासरी भाव ₹${avgRate} आहे. अनधिकृत भंगारवाला फक्त ₹${informalRate} देतो. अधिकृत विक्री केल्यास तुम्हाला ${gain}% जास्त पैसे मिळतील.`;
     }
-    return `${currentPrice.material} authorized benchmark rate is ₹${formalRate} per kg. Informal dealers pay only ₹${informalRate}. By recycling legally you earn ${gain}% more cash.`;
+    return `${currentPrice.material} authorized benchmark rate is ₹${formalRate} per kg, average rate is ₹${avgRate}. Informal dealers pay only ₹${informalRate}. By recycling legally you earn ${gain}% more cash.`;
   };
 
   const handleSpeak = () => {
@@ -81,9 +86,20 @@ export function PriceBoard() {
   return (
     <div className="px-4 py-4 space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">{t('prices')}</h1>
-          <p className="text-xs text-gray-500">AI-Powered Commodity Index & Cluster Rates</p>
+        <div className="flex items-center gap-2.5">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-black border border-gray-200 shadow-2xs"
+            >
+              <span>←</span>
+              <span>{t('back_btn')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">{t('prices')}</h1>
+            <p className="text-xs text-gray-500">AI-Powered Commodity Index & Cluster Rates</p>
+          </div>
         </div>
         <Badge variant="success">CPCB Verified Board</Badge>
       </div>
@@ -133,19 +149,21 @@ export function PriceBoard() {
 
         <div className="flex items-center justify-between mt-4">
           <div>
-            <p className="text-xs text-gray-400 font-semibold uppercase">
+            <p className="text-xs text-gray-500 font-bold uppercase">
               {t('reference_price')}
             </p>
-            <p className="text-3xl font-black text-gray-800">
+            <p className="text-3xl font-black text-gray-900">
               ₹{priceIntel?.authorized_fair_rate_per_kg || currentPrice.referencePricePerKg}
-              <span className="text-base font-semibold text-gray-400">/kg</span>
+              <span className="text-base font-bold text-gray-500">/kg</span>
             </p>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-gray-400 font-medium block">Weekly Forecast</span>
+            <span className="text-xs font-bold text-cyan-800 bg-cyan-100 px-2.5 py-1 rounded-lg block mb-1">
+              {t('ai_average_price')}: ₹{priceIntel?.average_market_price_per_kg || Math.round((currentPrice.referencePricePerKg * 0.95))}/kg
+            </span>
             <div className="flex items-center gap-1.5 justify-end">
               <TrendIcon className={`w-4 h-4 ${trendColor}`} />
-              <span className={`text-sm font-bold ${trendColor}`}>
+              <span className={`text-sm font-black ${trendColor}`}>
                 {priceIntel?.forecast_7_day?.trend === 'up'
                   ? `+${priceIntel?.forecast_7_day?.pct}%`
                   : priceIntel?.forecast_7_day?.trend === 'down'
@@ -156,11 +174,55 @@ export function PriceBoard() {
           </div>
         </div>
 
+        {/* AI Average Price Callout Bar */}
+        <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
+            <div>
+              <span className="font-bold text-emerald-950 block">{t('ai_average_price')}</span>
+              <span className="text-[11px] text-emerald-800">
+                Regional median benchmark across Pune industrial cluster
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-sm font-black text-emerald-900">
+              ₹{priceIntel?.average_market_price_per_kg || Math.round(currentPrice.referencePricePerKg * 0.95)}/kg
+            </span>
+            <span className="text-[10px] text-emerald-700 block">Cluster Average</span>
+          </div>
+        </div>
+
+        {/* Transparent 3-Component Fair Price Formula Breakdown */}
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] uppercase font-bold text-slate-600 block">1. CPCB Base</span>
+            <span className="text-sm font-black text-slate-800 font-mono">
+              ₹{priceIntel?.benchmark_price_per_kg || currentPrice.referencePricePerKg}
+            </span>
+            <span className="text-[9px] text-slate-600 block">Statutory</span>
+          </div>
+          <div className="p-2 rounded-xl bg-amber-50 border border-amber-200">
+            <span className="text-[10px] uppercase font-bold text-amber-800 block">2. Informal</span>
+            <span className="text-sm font-black text-amber-900 font-mono">
+              ₹{priceIntel?.informal_dealer_rate_per_kg || Math.round(currentPrice.referencePricePerKg * 0.8)}
+            </span>
+            <span className="text-[9px] text-amber-700 block">Scrap Dealer</span>
+          </div>
+          <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-300 ring-1 ring-emerald-400/30">
+            <span className="text-[10px] uppercase font-bold text-emerald-800 block">3. Fair Average</span>
+            <span className="text-sm font-black text-emerald-900 font-mono">
+              ₹{priceIntel?.average_market_price_per_kg || Math.round(currentPrice.referencePricePerKg * 0.95)}
+            </span>
+            <span className="text-[9px] text-emerald-700 block">(Fair+Inf+CPCB)/3</span>
+          </div>
+        </div>
+
         {/* AI Forecast Rationale */}
         {priceIntel?.forecast_7_day?.reason && (
-          <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-600">
-            <Sparkles className="w-4 h-4 text-cyan-600 shrink-0" />
-            <span className="leading-snug">{priceIntel.forecast_7_day.reason}</span>
+          <div className="mt-2.5 pt-2.5 border-t border-gray-200 flex items-center gap-2 text-xs text-gray-700">
+            <Sparkles className="w-4 h-4 text-cyan-700 shrink-0" />
+            <span className="leading-snug font-medium">{priceIntel.forecast_7_day.reason}</span>
           </div>
         )}
       </Card>
@@ -181,13 +243,13 @@ export function PriceBoard() {
 
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="p-2.5 rounded-xl bg-white border border-gray-200">
-            <span className="text-gray-400 block text-[10px] uppercase font-bold">
+            <span className="text-gray-600 block text-[10px] uppercase font-bold">
               Local Scrap Aggregator
             </span>
-            <span className="text-base font-bold text-gray-600 font-mono">
+            <span className="text-base font-bold text-gray-700 font-mono">
               ₹{priceIntel?.informal_dealer_rate_per_kg || 220}/kg
             </span>
-            <span className="text-[10px] text-gray-400 block mt-0.5">Unregulated pricing</span>
+            <span className="text-[10px] text-gray-600 block mt-0.5 font-medium">Unregulated pricing</span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-green-600 text-white shadow-xs">
@@ -202,14 +264,14 @@ export function PriceBoard() {
         </div>
 
         <p className="text-[11px] text-green-900 leading-relaxed font-medium">
-          💡 Selling a 15 kg lot through Eco-Link delivers ₹
+          💡 Selling a 15 kg lot through Kabadiwala Connect delivers ₹
           {priceIntel ? (priceIntel.extra_collector_earnings * 1.5).toLocaleString('en-IN') : '900'} more directly into your UPI account than informal middle dealers.
         </p>
       </Card>
 
       {/* Market Range */}
       <Card>
-        <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+        <p className="text-xs font-semibold text-gray-600 uppercase mb-3">
           {t('market_range')} & Volatility
         </p>
         <div className="flex items-center justify-between mb-2 text-xs font-semibold text-gray-600">
@@ -226,7 +288,7 @@ export function PriceBoard() {
       </Card>
 
       <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-500 text-center">
-        Prices updated automatically via CPCB secondary metals benchmark & Eco-Link AI Price Index.
+        Prices updated automatically via CPCB secondary metals benchmark & Kabadiwala Connect AI Price Index.
       </div>
     </div>
   );

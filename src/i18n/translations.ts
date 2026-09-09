@@ -1,12 +1,17 @@
 import type { Language } from '@/types';
 
 export const translations: Record<string, Record<Language, string>> = {
-  app_name: { en: 'ECO-LINK', hi: 'ECO-LINK', mr: 'ECO-LINK' },
+  app_name: { en: 'Kabadiwala Connect', hi: 'कबाड़ीवाला कनेक्ट', mr: 'कबाडीवाला कनेक्ट' },
+  subtitle: {
+    en: 'Bringing the Informal Collector into the Formal Recycling Chain',
+    hi: 'अनौपचारिक कबाड़ियों को औपचारिक रीसाइक्लिंग श्रृंखला से जोड़ना',
+    mr: 'अनौपचारिक कचरा वेचकांना अधिकृत पुनर्चक्रीकरण साखळीत आणणे',
+  },
   namaste: { en: 'Namaste', hi: 'नमस्ते', mr: 'नमस्कार' },
   tagline: {
-    en: 'Sell your e-waste at a better price.',
-    hi: 'अपना ई-वेस्ट बेहतर कीमत पर बेचें।',
-    mr: 'तुमचा ई-कचरा चांगल्या किंमतीवर विका.',
+    en: 'Digital bridge connecting scrap collectors with authorized recyclers.',
+    hi: 'कबाड़ीवालों को अधिकृत रीसाइक्लिंग चेन से जोड़ने वाला डिजिटल सेतु।',
+    mr: 'कबाडीवाल्यांना अधिकृत पुनर्चक्रीकरण साखळीशी जोडणारा डिजिटल दुवा.',
   },
   sell_ewaste: { en: 'Sell E-Waste', hi: 'ई-वेस्ट बेचें', mr: 'ई-कचरा विका' },
   home: { en: 'Home', hi: 'होम', mr: 'होम' },
@@ -364,6 +369,14 @@ export const translations: Record<string, Record<Language, string>> = {
   LCD: { en: 'LCD / Monitors', hi: 'एलसीडी / मॉनिटर', mr: 'एलसीडी / मॉनिटर' },
   Motor: { en: 'Electric Motors', hi: 'इलेक्ट्रिक मोटर', mr: 'इलेक्ट्रिक मोटर' },
   'Mixed Plastic': { en: 'E-Waste Mixed Plastic', hi: 'मिश्रित ई-वेस्ट प्लास्टिक', mr: 'मिश्रित ई-कचरा प्लास्टिक' },
+  Metal: { en: 'Metal / Ferrous Scrap', hi: 'धातु और स्क्रैप मेटल', mr: 'धातू व लोखंडी कचरा' },
+  'Chargers / Adapters': { en: 'Chargers & Adapters', hi: 'चार्जर और अडैप्टर', mr: 'चार्जर आणि अडॅप्टर' },
+  'Other E-Waste': { en: 'Unknown / Other E-Waste', hi: 'अन्य / विविध ई-कचरा', mr: 'इतर / संमिश्र ई-कचरा' },
+  low_confidence_warning: {
+    en: 'Low confidence — please verify material manually.',
+    hi: 'कम सटीकता — कृपया सामग्री की स्वयं पुष्टि करें।',
+    mr: 'कमी खात्री — कृपया सामग्री स्वतः तपासा किंवा बदला.',
+  },
   
   // Proximity & location terms
   near: { en: 'Near (Local)', hi: 'नजदीक (लोकल)', mr: 'जवळ (स्थानिक)' },
@@ -446,6 +459,71 @@ export const translations: Record<string, Record<Language, string>> = {
     en: 'Legal Immunity & Authorized Settlement Active',
     hi: 'कानूनी सुरक्षा और अधिकृत निपटान सक्रिय',
     mr: 'कायदेशीर संरक्षण आणि अधिकृत पूर्तता सक्रिय',
+  },
+  ai_average_price: {
+    en: 'AI Average Market Price',
+    hi: 'AI औसत बाजार मूल्य',
+    mr: 'AI सरासरी बाजार भाव',
+  },
+  average_price_label: {
+    en: 'Average Market Rate',
+    hi: 'औसत बाजार दर',
+    mr: 'सरासरी बाजार दर',
+  },
+  estimated_avg_payout: {
+    en: 'Estimated Average Payout',
+    hi: 'अनुमानित औसत भुगतान',
+    mr: 'अंदाजे सरासरी रक्कम',
+  },
+  login_collector_portal: {
+    en: 'Scrap Collector Login',
+    hi: 'कबाड़ीवाला / स्क्रैप कलेक्टर लॉगिन',
+    mr: 'स्क्रॅप संकलक / भंगारवाला लॉगिन',
+  },
+  login_recycler_portal: {
+    en: 'Authorized Recycler Portal',
+    hi: 'अधिकृत रीसायकलर पोर्टल',
+    mr: 'अधिकृत पुनर्प्रक्रिया पोर्टल',
+  },
+  sign_in: {
+    en: 'Sign In to Dashboard',
+    hi: 'डैशबोर्ड में साइन इन करें',
+    mr: 'डॅशबोर्डवर साइन इन करा',
+  },
+  back_btn: {
+    en: 'Back',
+    hi: 'पीछे जाएं',
+    mr: 'मागे जा',
+  },
+  main_menu: {
+    en: 'Main Menu',
+    hi: 'मुख्य मेन्यू',
+    mr: 'मुख्य मेन्यू',
+  },
+  logout_btn: {
+    en: 'Logout',
+    hi: 'लॉगआउट',
+    mr: 'लॉगआउट',
+  },
+  choose_portal_prompt: {
+    en: 'Select Your Work Portal',
+    hi: 'अपना कार्य पोर्टल चुनें',
+    mr: 'तुमचे कार्य पोर्टल निवडा',
+  },
+  collector_portal_desc: {
+    en: 'For scrap collectors (kabadiwala) to sell e-waste & receive instant payment',
+    hi: 'कबाड़ीवालों के लिए ई-कचरा बेचने और तुरंत नकद/UPI भुगतान पाने हेतु',
+    mr: 'भंगार गोळा करणाऱ्यांसाठी ई-कचरा विकून त्वरित पेमेंट मिळवण्यासाठी',
+  },
+  recycler_portal_desc: {
+    en: 'For CPCB/MPCB authorized industrial e-waste dismantling & recycling plants',
+    hi: 'प्रदूषण नियंत्रण बोर्ड से अधिकृत औद्योगिक ई-वेस्ट रीसाइक्लिंग कंपनियों के लिए',
+    mr: 'प्रदूषण नियंत्रण मंडळाने अधिकृत केलेल्या औद्योगिक ई-कचरा प्रकल्पांसाठी',
+  },
+  enter_portal: {
+    en: 'Enter Portal',
+    hi: 'पोर्टल खोलें',
+    mr: 'पोर्टल उघडा',
   },
 };
 

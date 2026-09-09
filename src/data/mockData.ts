@@ -21,6 +21,9 @@ export const MATERIAL_PHOTOS: Record<MaterialCategory, string> = {
   LCD: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=compress&cs=tinysrgb&w=800',
   Motor: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=compress&cs=tinysrgb&w=800',
   'Mixed Plastic': 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=compress&cs=tinysrgb&w=800',
+  Metal: 'https://images.unsplash.com/photo-1535813547-99c456a41d4a?auto=compress&cs=tinysrgb&w=800',
+  'Chargers / Adapters': 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=compress&cs=tinysrgb&w=800',
+  'Other E-Waste': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=compress&cs=tinysrgb&w=800',
 };
 
 export const MATERIAL_CATEGORIES: readonly MaterialCategory[] = [
@@ -30,6 +33,9 @@ export const MATERIAL_CATEGORIES: readonly MaterialCategory[] = [
   'LCD',
   'Motor',
   'Mixed Plastic',
+  'Metal',
+  'Chargers / Adapters',
+  'Other E-Waste',
 ] as const;
 
 export const DEFAULT_PRICES: Record<MaterialCategory, Price> = {
@@ -87,6 +93,33 @@ export const DEFAULT_PRICES: Record<MaterialCategory, Price> = {
     trend: 'stable',
     trendPercent: 0,
   },
+  Metal: {
+    material: 'Metal',
+    referencePricePerKg: 110,
+    minPricePerKg: 95,
+    maxPricePerKg: 130,
+    location: 'Pune',
+    trend: 'up',
+    trendPercent: 2,
+  },
+  'Chargers / Adapters': {
+    material: 'Chargers / Adapters',
+    referencePricePerKg: 160,
+    minPricePerKg: 140,
+    maxPricePerKg: 185,
+    location: 'Pune',
+    trend: 'stable',
+    trendPercent: 1,
+  },
+  'Other E-Waste': {
+    material: 'Other E-Waste',
+    referencePricePerKg: 95,
+    minPricePerKg: 80,
+    maxPricePerKg: 115,
+    location: 'Pune',
+    trend: 'stable',
+    trendPercent: 1,
+  },
 };
 
 export const demoPrice: Price = DEFAULT_PRICES.PCB;
@@ -99,7 +132,7 @@ export const AUTHORIZED_RECYCLERS: Recycler[] = [
     location: 'Hadapsar MIDC, Pune',
     distanceKm: 3.2,
     proximityKey: 'near',
-    materialsAccepted: ['PCB', 'Cable', 'Motor', 'LCD', 'Battery', 'Mixed Plastic'],
+    materialsAccepted: ['PCB', 'Cable', 'Motor', 'LCD', 'Battery', 'Mixed Plastic', 'Metal', 'Chargers / Adapters', 'Other E-Waste'],
     offeredPricePerKg: 360, // Highest rate nearby
     pickupAvailable: true,
     matchScore: 97,
@@ -115,7 +148,7 @@ export const AUTHORIZED_RECYCLERS: Recycler[] = [
     location: 'Bhosari MIDC Industrial Area, Pune',
     distanceKm: 14.5,
     proximityKey: 'mid',
-    materialsAccepted: ['PCB', 'LCD', 'Mixed Plastic', 'Cable'],
+    materialsAccepted: ['PCB', 'LCD', 'Mixed Plastic', 'Cable', 'Metal', 'Other E-Waste'],
     offeredPricePerKg: 345, // Medium rate, medium distance
     pickupAvailable: true,
     matchScore: 92,
@@ -131,7 +164,7 @@ export const AUTHORIZED_RECYCLERS: Recycler[] = [
     location: 'Chakan Mega Auto Hub Phase II, Pune Outer',
     distanceKm: 32.8,
     proximityKey: 'far',
-    materialsAccepted: ['PCB', 'Battery', 'Motor', 'Cable', 'LCD', 'Mixed Plastic'],
+    materialsAccepted: ['PCB', 'Battery', 'Motor', 'Cable', 'LCD', 'Mixed Plastic', 'Chargers / Adapters', 'Other E-Waste'],
     offeredPricePerKg: 330, // Regional mega facility rate
     pickupAvailable: true,
     matchScore: 86,
@@ -147,7 +180,7 @@ export const AUTHORIZED_RECYCLERS: Recycler[] = [
     location: 'Pimpri-Chinchwad Tech Park',
     distanceKm: 19.0,
     proximityKey: 'mid',
-    materialsAccepted: ['Mixed Plastic', 'LCD', 'Cable', 'PCB', 'Motor', 'Battery'],
+    materialsAccepted: ['Mixed Plastic', 'LCD', 'Cable', 'PCB', 'Motor', 'Battery', 'Metal', 'Chargers / Adapters', 'Other E-Waste'],
     offeredPricePerKg: 335,
     pickupAvailable: false,
     matchScore: 84,

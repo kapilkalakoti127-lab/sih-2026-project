@@ -100,12 +100,15 @@ export function RecyclerLotDetail({ onSendOffer, onBack }: RecyclerLotDetailProp
 
   return (
     <div className="p-5 lg:p-8 space-y-5 max-w-4xl">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" /> {t('back')}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-900 font-black text-xs transition-colors shadow-2xs border border-gray-300"
+        >
+          <span className="text-base font-black">←</span>
+          <span>{t('back_btn')}</span>
+        </button>
+      </div>
 
       {/* Header with status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -182,7 +185,7 @@ export function RecyclerLotDetail({ onSendOffer, onBack }: RecyclerLotDetailProp
 
           {/* Connected Informal Scrap Collector Profile */}
           <div className="mt-5 pt-4 border-t border-gray-100">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wide block mb-2">
+            <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">
               Registered Scrap Collector Details
             </span>
             <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200/80 space-y-2.5">
@@ -195,7 +198,7 @@ export function RecyclerLotDetail({ onSendOffer, onBack }: RecyclerLotDetailProp
                     <p className="text-xs font-bold text-gray-800 leading-tight">
                       {collectorProfile.name}
                     </p>
-                    <p className="text-[10px] text-gray-400 font-mono">
+                    <p className="text-[10px] text-gray-600 font-mono font-medium">
                       {collectorProfile.id}
                     </p>
                   </div>
@@ -207,11 +210,11 @@ export function RecyclerLotDetail({ onSendOffer, onBack }: RecyclerLotDetailProp
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-200/60">
                 <div>
-                  <span className="text-[10px] text-gray-400 block">Collector Phone:</span>
-                  <span className="font-mono text-gray-700 text-[11px] block">{collectorProfile.phone}</span>
+                  <span className="text-[10px] text-gray-600 font-medium block">Collector Phone:</span>
+                  <span className="font-mono text-gray-800 text-[11px] block">{collectorProfile.phone}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400 block">Default UPI Address:</span>
+                  <span className="text-[10px] text-gray-600 font-medium block">Default UPI Address:</span>
                   <span className="font-mono font-bold text-green-700 text-[11px] block truncate">
                     {collectorProfile.upiId}
                   </span>
@@ -465,7 +468,7 @@ export function RecyclerLotDetail({ onSendOffer, onBack }: RecyclerLotDetailProp
                 <p className="text-gray-500 mt-0.5">
                   Plant: {currentRecycler.location}
                 </p>
-                <p className="text-gray-400 mt-0.5">
+                <p className="text-gray-600 mt-0.5 font-medium">
                   Accepted Materials: {currentRecycler.materialsAccepted.join(', ')}
                 </p>
               </div>

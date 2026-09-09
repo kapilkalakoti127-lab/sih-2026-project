@@ -324,9 +324,9 @@ export function RecyclerProfile() {
         ) : (
           <div className="pt-6 space-y-4 text-sm">
             <div className="flex items-center gap-3.5">
-              <Award className="w-5 h-5 text-gray-400 shrink-0" />
+              <Award className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">{t('epr_reg')} / Compliance License</p>
+                <p className="text-xs text-gray-600 font-medium">{t('epr_reg')} / Compliance License</p>
                 <p className="font-semibold text-gray-800 font-mono">
                   {activeRecycler.eprLicense || 'CPCB-EPR-MH-2024-0891'}
                 </p>
@@ -334,17 +334,17 @@ export function RecyclerProfile() {
             </div>
 
             <div className="flex items-center gap-3.5">
-              <MapPin className="w-5 h-5 text-gray-400 shrink-0" />
+              <MapPin className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">{t('location')} & Operating MIDC</p>
+                <p className="text-xs text-gray-600 font-medium">{t('location')} & Operating MIDC</p>
                 <p className="font-semibold text-gray-800">{activeRecycler.location}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3.5">
-              <PackageCheck className="w-5 h-5 text-gray-400 shrink-0" />
+              <PackageCheck className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">{t('materials_accepted')}</p>
+                <p className="text-xs text-gray-600 font-medium">{t('materials_accepted')}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {activeRecycler.materialsAccepted.map((mat) => (
                     <span
@@ -359,9 +359,9 @@ export function RecyclerProfile() {
             </div>
 
             <div className="flex items-center gap-3.5">
-              <Truck className="w-5 h-5 text-gray-400 shrink-0" />
+              <Truck className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">{t('pickup_available')}</p>
+                <p className="text-xs text-gray-600 font-medium">{t('pickup_available')}</p>
                 <p className="font-semibold text-green-700">
                   {activeRecycler.notes || 'Doorstep weigh-and-pay collection available across Pune'}
                 </p>
@@ -369,9 +369,9 @@ export function RecyclerProfile() {
             </div>
 
             <div className="flex items-center gap-3.5">
-              <UserRound className="w-5 h-5 text-gray-400 shrink-0" />
+              <UserRound className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">Authorized Facility In-Charge</p>
+                <p className="text-xs text-gray-600 font-medium">Authorized Facility In-Charge</p>
                 <p className="font-semibold text-gray-800">
                   {activeRecycler.contactPerson || 'Authorized Officer'}
                 </p>
@@ -379,9 +379,9 @@ export function RecyclerProfile() {
             </div>
 
             <div className="flex items-center gap-3.5">
-              <Phone className="w-5 h-5 text-gray-400 shrink-0" />
+              <Phone className="w-5 h-5 text-gray-500 shrink-0" />
               <div>
-                <p className="text-xs text-gray-400 font-medium">Dispatch Helpline</p>
+                <p className="text-xs text-gray-600 font-medium">Dispatch Helpline</p>
                 <p className="font-semibold text-gray-800 font-mono">
                   {activeRecycler.phone || '+91 98230 45671'}
                 </p>

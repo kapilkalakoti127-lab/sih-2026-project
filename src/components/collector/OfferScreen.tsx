@@ -72,30 +72,30 @@ export function OfferScreen({ onAccept, onDecline, onBack }: OfferProps) {
 
       {/* Your Lot */}
       <Card>
-        <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+        <p className="text-xs font-semibold text-gray-600 uppercase mb-3">
           {t('your_lot')}
         </p>
         <div className="space-y-2.5 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">{t('lot_id')}</span>
+            <span className="text-gray-600">{t('lot_id')}</span>
             <span className="font-semibold text-gray-800">{currentLot.lotId}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">{t('material')}</span>
+            <span className="text-gray-600">{t('material')}</span>
             <span className="font-semibold text-gray-800">{t(currentLot.material)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">{t('weight')}</span>
+            <span className="text-gray-600">{t('weight')}</span>
             <span className="font-semibold text-gray-800">{currentLot.weightKg} kg</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">{t('reference_price')}</span>
+            <span className="text-gray-600">{t('reference_price')}</span>
             <span className="font-semibold text-gray-800">
               ₹{currentLot.referencePricePerKg}/kg
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">{t('estimated_value')}</span>
+            <span className="text-gray-600">{t('estimated_value')}</span>
             <span className="font-semibold text-gray-800">
               ₹{baselineValue.toLocaleString('en-IN')}
             </span>
@@ -120,7 +120,7 @@ export function OfferScreen({ onAccept, onDecline, onBack }: OfferProps) {
           {recycler.name}
         </h2>
         {recycler.eprLicense && (
-          <p className="text-xs text-gray-400 font-mono mb-3">
+          <p className="text-xs text-gray-600 font-mono mb-3">
             Lic: {recycler.eprLicense}
           </p>
         )}

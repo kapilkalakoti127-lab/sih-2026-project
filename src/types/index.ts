@@ -4,7 +4,10 @@ export type MaterialCategory =
   | 'Battery'
   | 'LCD'
   | 'Motor'
-  | 'Mixed Plastic';
+  | 'Mixed Plastic'
+  | 'Metal'
+  | 'Chargers / Adapters'
+  | 'Other E-Waste';
 
 export type LotStatus =
   | 'Created'

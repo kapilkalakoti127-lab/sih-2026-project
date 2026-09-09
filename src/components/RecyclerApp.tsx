@@ -17,17 +17,16 @@ export function RecyclerApp() {
     <div className="min-h-screen bg-gray-50 flex">
       <RecyclerSidebar active={screen} onNavigate={setScreen} />
       <div className="flex-1 min-w-0 pb-20 md:pb-0">
-        <header className="md:hidden sticky top-0 z-20 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+        <header className="md:hidden sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-xs">
           <div>
-            <span className="font-bold text-gray-800 text-base">ECO-LINK</span>
-            <span className="text-[10px] text-cyan-700 font-semibold block">Authorized Recycler</span>
+            <span className="font-black text-gray-900 text-base">Kabadiwala Connect</span>
+            <span className="text-[10px] text-cyan-800 font-bold block">Authorized Recycler Portal</span>
           </div>
           <button
-            onClick={() => setRole('collector')}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-bold"
+            onClick={() => setRole(null)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-800 border border-red-200 text-xs font-black"
           >
-            <Smartphone className="w-3.5 h-3.5 text-green-600" />
-            Collector App
+            ← Main Menu
           </button>
         </header>
 

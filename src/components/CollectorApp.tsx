@@ -20,18 +20,48 @@ export function CollectorApp() {
     setScreen('match');
   };
 
+  const handleBack = () => {
+    switch (screen) {
+      case 'create':
+      case 'prices':
+      case 'mylot':
+      case 'earnings':
+      case 'profile':
+        setScreen('home');
+        break;
+      case 'match':
+        setScreen('create');
+        break;
+      case 'offer':
+        setScreen('match');
+        break;
+      case 'handover':
+        setScreen('offer');
+        break;
+      case 'lotDetail':
+        setScreen('mylot');
+        break;
+      default:
+        setScreen('home');
+    }
+  };
+
   const showBottomNav = ['home', 'mylot', 'prices', 'earnings', 'profile'].includes(screen);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <CollectorExitBar />
-      <CollectorHeader />
+      <CollectorHeader
+        currentScreen={screen}
+        onBack={handleBack}
+        onHome={() => setScreen('home')}
+      />
       <main className={`max-w-md mx-auto ${showBottomNav ? 'pb-24' : 'pb-6'}`}>
         {screen === 'home' && <CollectorHome onNavigate={setScreen} />}
         {screen === 'create' && (
-          <CreateLot onComplete={handleCreateComplete} onBack={() => setScreen('home')} />
+          <CreateLot onComplete={handleCreateComplete} onBack={handleBack} />
         )}
-        {screen === 'prices' && <PriceBoard />}
+        {screen === 'prices' && <PriceBoard onBack={handleBack} />}
         {screen === 'match' && (
           <RecyclerMatch onViewOffer={() => setScreen('offer')} onBack={() => setScreen('create')} />
         )}
@@ -39,10 +69,10 @@ export function CollectorApp() {
           <OfferScreen onAccept={() => setScreen('handover')} onDecline={() => setScreen('home')} onBack={() => setScreen('match')} />
         )}
         {screen === 'handover' && <HandoverRecord onDone={() => setScreen('earnings')} />}
-        {screen === 'mylot' && <MyLot onNavigate={setScreen} />}
+        {screen === 'mylot' && <MyLot onNavigate={setScreen} onBack={handleBack} />}
         {screen === 'lotDetail' && <LotDetail onBack={() => setScreen('mylot')} />}
-        {screen === 'earnings' && <Earnings />}
-        {screen === 'profile' && <CollectorProfile />}
+        {screen === 'earnings' && <Earnings onBack={handleBack} />}
+        {screen === 'profile' && <CollectorProfile onBack={handleBack} />}
       </main>
       {showBottomNav && <BottomNav active={screen} onNavigate={setScreen} />}
     </div>

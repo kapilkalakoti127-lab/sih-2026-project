@@ -160,10 +160,10 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
 
           <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-white/10 justify-between md:justify-end">
             <div className="text-right hidden sm:block">
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider block font-semibold">
+              <span className="text-[10px] text-emerald-300 uppercase tracking-wider block font-semibold">
                 Facility In-Charge
               </span>
-              <span className="text-xs font-semibold text-gray-200">
+              <span className="text-xs font-semibold text-gray-100">
                 {activeRecycler.contactPerson || 'Authorized Officer'}
               </span>
             </div>
@@ -224,7 +224,7 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
               </div>
               <p className="text-2xl sm:text-3xl font-black text-gray-800">{stat.value}</p>
               <p className="text-xs font-bold text-gray-700 mt-1">{stat.label}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{stat.sublabel}</p>
+              <p className="text-[11px] text-gray-600 font-medium mt-0.5">{stat.sublabel}</p>
             </Card>
           );
         })}
@@ -233,64 +233,54 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
       {/* Main Split Grid */}
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Urgent Attention / Action Card */}
-        <Card className="lg:col-span-2 p-5 space-y-4">
+        <Card className="lg:col-span-2 p-5 space-y-4 border-green-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-bold text-gray-800 text-base">Immediate Action Required</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Lots submitted by local scrap collectors requiring offer or scale verification.
-              </p>
+            <div className="flex items-center gap-2">
+              <Clock3 className="w-5 h-5 text-green-700" />
+              <h2 className="font-bold text-gray-800 text-base">Current Priority Action Lot</h2>
             </div>
-            <Badge variant={acceptedLots.length > 0 ? 'success' : newLots.length > 0 ? 'warning' : 'info'}>
-              {acceptedLots.length > 0
-                ? `${acceptedLots.length} Ready for Scale Handover`
-                : `${newLots.length} Needs Pricing`}
-            </Badge>
+            <span className="text-xs font-bold text-green-800 bg-green-100 px-2.5 py-1 rounded-full">
+              Live Digital Stream
+            </span>
           </div>
 
           {urgentLot ? (
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 space-y-3.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-green-50/70 to-emerald-50/40 border border-green-200 space-y-3">
+              <div className="flex items-start justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0 border border-green-200">
-                    {urgentLot.photoUrl ? (
-                      <img
-                        src={urgentLot.photoUrl}
-                        alt={urgentLot.material}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
-                    ) : (
-                      <Inbox className="w-6 h-6 text-green-600" />
-                    )}
+                  <div className="w-12 h-12 rounded-xl bg-white border border-green-200 overflow-hidden shrink-0">
+                    <img
+                      src={urgentLot.photoUrl || MATERIAL_PHOTOS[urgentLot.material]}
+                      alt={urgentLot.material}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-gray-800 text-base">
-                        {urgentLot.lotId} · {urgentLot.material}
-                      </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-bold text-gray-900">
+                        {urgentLot.lotId}
+                      </span>
                       <Badge
                         variant={
                           urgentLot.status === 'Accepted'
                             ? 'success'
-                            : urgentLot.status === 'Completed'
-                            ? 'neutral'
                             : urgentLot.status === 'Offered'
-                            ? 'info'
-                            : 'warning'
+                            ? 'warning'
+                            : 'info'
                         }
                       >
                         {urgentLot.status === 'Accepted' ? 'Collector Accepted' : urgentLot.status}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Submitted by: <span className="font-bold text-gray-700">{collectorProfile.name}</span> ({collectorProfile.id})
+                    <p className="text-xs text-gray-600 mt-0.5 font-medium">
+                      Submitted by: <span className="font-bold text-gray-800">{collectorProfile.name}</span> ({collectorProfile.id})
                     </p>
                   </div>
                 </div>
 
                 <div className="text-left sm:text-right">
-                  <span className="text-[11px] text-gray-400 block font-medium">Estimated / Offered Payout</span>
-                  <span className="text-xl font-bold text-gray-800">
+                  <span className="text-[11px] text-gray-600 block font-semibold">Estimated / Offered Payout</span>
+                  <span className="text-xl font-bold text-gray-900">
                     ₹{(urgentLot.totalOfferValue || urgentLot.estimatedValue).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -298,15 +288,15 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
 
               <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-gray-200/80">
                 <div className="p-2 rounded-lg bg-white border border-gray-100">
-                  <span className="text-gray-400 block text-[10px]">Net Weight:</span>
+                  <span className="text-gray-600 block text-[10px] font-semibold">Net Weight:</span>
                   <span className="font-bold text-gray-800">{urgentLot.weightKg} kg</span>
                 </div>
                 <div className="p-2 rounded-lg bg-white border border-gray-100">
-                  <span className="text-gray-400 block text-[10px]">Benchmark Rate:</span>
+                  <span className="text-gray-600 block text-[10px] font-semibold">Benchmark Rate:</span>
                   <span className="font-bold text-gray-800">₹{urgentLot.referencePricePerKg}/kg</span>
                 </div>
                 <div className="p-2 rounded-lg bg-white border border-gray-100">
-                  <span className="text-gray-400 block text-[10px]">Offered Rate:</span>
+                  <span className="text-gray-600 block text-[10px] font-semibold">Offered Rate:</span>
                   <span className="font-bold text-green-700">
                     ₹{urgentLot.offeredPricePerKg || activeRecycler.offeredPricePerKg}/kg
                   </span>
@@ -314,8 +304,10 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
               </div>
 
               <div className="flex items-center justify-between pt-2">
-                <span className="text-[11px] text-gray-400">
-                  Received {new Date(urgentLot.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                <span className="text-[11px] text-gray-600 font-medium">
+                  Received {urgentLot.createdAt && !isNaN(new Date(urgentLot.createdAt).getTime())
+                    ? new Date(urgentLot.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+                    : 'Just now'}
                 </span>
 
                 <Button size="sm" onClick={() => handleReviewLot(urgentLot.lotId)}>
@@ -329,9 +321,11 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-500 py-8 text-center">
-              No pending collector lots right now.
-            </p>
+            <div className="text-center py-8 text-gray-500">
+              <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
+              <p className="text-sm font-bold text-gray-700">All Lots Processed</p>
+              <p className="text-xs text-gray-500 mt-1">No pending bids or handovers requiring action.</p>
+            </div>
           )}
 
           {/* Quick Action Navigation Buttons */}
@@ -341,14 +335,14 @@ export function RecyclerDashboard({ onNavigate }: DashboardProps) {
               className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-left transition-colors"
             >
               <span className="text-xs font-bold text-gray-800 block">All Incoming Lots</span>
-              <span className="text-[11px] text-gray-400">{lots.length} active lots</span>
+              <span className="text-[11px] text-gray-600 font-medium">{lots.length} active lots</span>
             </button>
             <button
               onClick={() => onNavigate('transactions')}
               className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-left transition-colors"
             >
               <span className="text-xs font-bold text-gray-800 block">Form-6 Manifests</span>
-              <span className="text-[11px] text-gray-400">{completedLots.length} legal records</span>
+              <span className="text-[11px] text-gray-600 font-medium">{completedLots.length} legal records</span>
             </button>
             <button
               onClick={() => onNavigate('profile')}

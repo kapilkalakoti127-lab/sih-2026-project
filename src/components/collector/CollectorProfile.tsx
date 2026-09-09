@@ -20,7 +20,11 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
-export function CollectorProfile() {
+interface CollectorProfileProps {
+  onBack?: () => void;
+}
+
+export function CollectorProfile({ onBack }: CollectorProfileProps = {}) {
   const { t, collectorProfile, updateCollectorProfile, lots, handovers } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(collectorProfile.name);
@@ -66,11 +70,22 @@ export function CollectorProfile() {
     <div className="px-4 py-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">{t('collector_profile')}</h1>
-          <p className="text-xs text-gray-500 mt-0.5">
-            CPCB / SPCB Authorized Informal Collector Identity
-          </p>
+        <div className="flex items-center gap-2.5">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-black border border-gray-200 shadow-2xs"
+            >
+              <span>←</span>
+              <span>{t('back_btn')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">{t('collector_profile')}</h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              CPCB / SPCB Authorized Informal Collector Identity
+            </p>
+          </div>
         </div>
         {!isEditing ? (
           <Button
@@ -106,16 +121,16 @@ export function CollectorProfile() {
         <div className="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-bl-full pointer-events-none" />
 
         {/* Top bar */}
-        <div className="px-5 py-3 bg-black/20 border-b border-white/10 flex items-center justify-between">
+        <div className="px-5 py-3 bg-slate-900 border-b border-emerald-600/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-green-400 flex items-center justify-center text-slate-900 font-black text-[11px]">
+            <div className="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center text-slate-900 font-black text-[11px]">
               ✓
             </div>
-            <span className="text-xs font-bold tracking-wider uppercase text-green-300">
+            <span className="text-xs font-black tracking-wider uppercase text-emerald-300">
               Government Circular Economy Registry
             </span>
           </div>
-          <span className="text-[10px] font-bold text-white/75 bg-white/15 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full">
             E-Waste Rules 2022
           </span>
         </div>
@@ -124,26 +139,26 @@ export function CollectorProfile() {
         <div className="p-5 space-y-4">
           <div className="flex items-start gap-4">
             {/* Avatar / Photo */}
-            <div className="w-16 h-16 rounded-2xl bg-white/15 border-2 border-white/30 flex items-center justify-center shrink-0 shadow-inner">
-              <UserRound className="w-9 h-9 text-green-200" />
+            <div className="w-16 h-16 rounded-2xl bg-emerald-950/80 border-2 border-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+              <UserRound className="w-9 h-9 text-emerald-200" />
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h2 className="text-lg font-bold text-white truncate">
+                <h2 className="text-lg font-black text-white truncate">
                   {collectorProfile.name}
                 </h2>
-                <span className="inline-flex items-center gap-1 bg-green-500/90 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">
                   <ShieldCheck className="w-3 h-3" /> {collectorProfile.kycStatus}
                 </span>
               </div>
 
               {/* Unique ID Highlight */}
-              <div className="mt-1.5 inline-block bg-black/40 border border-green-400/40 px-2.5 py-1 rounded-lg">
-                <span className="text-[10px] text-green-300 font-semibold uppercase block leading-none">
+              <div className="mt-1.5 inline-block bg-slate-950 border-2 border-emerald-400 px-3 py-1 rounded-lg">
+                <span className="text-[10px] text-emerald-300 font-bold uppercase block leading-none">
                   {t('unique_id')}
                 </span>
-                <span className="font-mono text-sm font-black text-white tracking-wider">
+                <span className="font-mono text-sm font-black text-emerald-100 tracking-wider">
                   {collectorProfile.id}
                 </span>
               </div>
@@ -151,37 +166,37 @@ export function CollectorProfile() {
           </div>
 
           {/* Quick Details Grid */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
-            <div>
-              <span className="text-white/60 text-[11px] block">{t('location')}</span>
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-700/50 text-xs">
+            <div className="p-2 rounded-lg bg-slate-950/60 border border-emerald-800/40">
+              <span className="text-emerald-300 text-[11px] font-bold block">{t('location')}</span>
               <span className="font-bold text-white truncate block">{collectorProfile.location}</span>
             </div>
-            <div>
-              <span className="text-white/60 text-[11px] block">Cluster Zone</span>
+            <div className="p-2 rounded-lg bg-slate-950/60 border border-emerald-800/40">
+              <span className="text-emerald-300 text-[11px] font-bold block">Cluster Zone</span>
               <span className="font-bold text-white truncate block">{collectorProfile.zone}</span>
             </div>
-            <div>
-              <span className="text-white/60 text-[11px] block">Phone / Helpline</span>
+            <div className="p-2 rounded-lg bg-slate-950/60 border border-emerald-800/40">
+              <span className="text-emerald-300 text-[11px] font-bold block">Phone / Helpline</span>
               <span className="font-bold text-white font-mono block">{collectorProfile.phone}</span>
             </div>
-            <div>
-              <span className="text-white/60 text-[11px] block">Registered On</span>
+            <div className="p-2 rounded-lg bg-slate-950/60 border border-emerald-800/40">
+              <span className="text-emerald-300 text-[11px] font-bold block">Registered On</span>
               <span className="font-bold text-white block">{collectorProfile.registrationDate}</span>
             </div>
           </div>
 
           {/* Digital QR Barcode for Recycler On-site Scanning */}
-          <div className="bg-black/40 rounded-xl p-3 flex items-center justify-between border border-white/20">
+          <div className="bg-slate-950 rounded-xl p-3 flex items-center justify-between border border-emerald-500/40">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-lg bg-white p-1 shrink-0 flex items-center justify-center shadow-sm">
                 <QrCode className="w-8 h-8 text-slate-900" />
               </div>
               <div>
                 <span className="text-xs font-bold text-white block">Collector Verification QR</span>
-                <span className="text-[10px] text-green-200">Authorized pickup scan key</span>
+                <span className="text-[11px] font-semibold text-emerald-300">Authorized pickup scan key</span>
               </div>
             </div>
-            <span className="text-[11px] font-mono font-bold bg-white/20 px-2 py-1 rounded text-white">
+            <span className="text-[11px] font-mono font-black bg-emerald-500 text-slate-950 px-2 py-1 rounded">
               VERIFIED
             </span>
           </div>
@@ -285,7 +300,7 @@ export function CollectorProfile() {
           <div>
             <h4 className="text-sm font-bold text-emerald-900">Formalization Benefits Active</h4>
             <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
-              As a registered informal collector on ECO-LINK, you receive legal immunity from informal hazardous waste handling penalties, direct pricing premiums, and instant UPI bank settlement.
+              As a registered informal collector on Kabadiwala Connect, you receive legal immunity from informal hazardous waste handling penalties, direct pricing premiums, and instant UPI bank settlement.
             </p>
           </div>
         </div>

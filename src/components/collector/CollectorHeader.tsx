@@ -1,8 +1,14 @@
-import { Recycle, Wifi, WifiOff, Globe, X, Building2, RotateCcw, ArrowLeftRight } from 'lucide-react';
+import { Recycle, Wifi, WifiOff, Globe, X, Building2, RotateCcw, ArrowLeftRight, LogOut } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import type { Language } from '@/types';
 
-export function CollectorHeader() {
+interface CollectorHeaderProps {
+  currentScreen?: string;
+  onBack?: () => void;
+  onHome?: () => void;
+}
+
+export function CollectorHeader({ currentScreen = 'home', onBack, onHome }: CollectorHeaderProps) {
   const { t, online, setOnline, language, setLanguage, setRole } = useApp();
 
   const cycleLanguage = () => {
@@ -17,32 +23,51 @@ export function CollectorHeader() {
     mr: 'मर',
   };
 
+  const isSubPage = currentScreen !== 'home';
+
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-2.5 shadow-sm">
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-3.5 py-2.5 shadow-sm">
       <div className="flex items-center justify-between max-w-md mx-auto">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center shadow-xs">
-            <Recycle className="w-5 h-5 text-white" strokeWidth={2.5} />
-          </div>
+        <div className="flex items-center gap-2">
+          {/* Back Button (Prominent when on sub-pages) */}
+          {isSubPage && onBack ? (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-100 hover:bg-green-200 text-green-950 font-black text-xs border border-green-300 transition-colors shadow-2xs"
+              title="Go Back"
+            >
+              <span className="text-base font-black">←</span>
+              <span>{t('back_btn')}</span>
+            </button>
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center shadow-xs">
+              <Recycle className="w-5 h-5 text-white" strokeWidth={2.5} />
+            </div>
+          )}
+
           <div>
-            <span className="font-bold text-gray-800 text-base leading-tight block">
+            <span className="font-black text-gray-900 text-sm leading-tight block">
               {t('app_name')}
             </span>
-            <span className="text-[11px] text-green-700 font-bold tracking-wide block">
-              {t('collector_demo')}
+            <span className="text-[10px] text-green-700 font-bold tracking-wide block">
+              Kabadiwala
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Switch to Recycler */}
+          {/* Main Menu / Logout Button */}
           <button
-            onClick={() => setRole('recycler')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 hover:bg-cyan-100 text-xs font-bold transition-colors shadow-2xs"
-            title="Switch to authorized recycler interface"
+            onClick={() => {
+              if (window.confirm('Return to main menu and exit scrap collector portal?')) {
+                setRole(null);
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 text-xs font-black transition-colors shadow-2xs"
+            title="Return to Main Menu & Logout"
           >
-            <Building2 className="w-4 h-4 text-cyan-600" />
-            <span className="hidden sm:inline">Recycler</span>
+            <LogOut className="w-3.5 h-3.5 text-red-600" />
+            <span>{t('main_menu')}</span>
           </button>
 
           {/* Language Switch */}

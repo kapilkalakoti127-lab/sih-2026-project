@@ -140,7 +140,7 @@ export function IncomingLot({ onNavigate }: IncomingProps) {
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <span className="text-xs text-gray-400 block">
+                      <span className="text-xs text-gray-600 font-semibold block">
                         {lot.offeredPricePerKg ? 'Offered Value' : t('estimated_value')}
                       </span>
                       <span className="text-xl font-bold text-gray-800">
@@ -151,19 +151,19 @@ export function IncomingLot({ onNavigate }: IncomingProps) {
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-xs">
                     <div className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/50">
-                      <span className="text-gray-400 block">{t('material')}</span>
+                      <span className="text-gray-600 font-medium block">{t('material')}</span>
                       <span className="font-bold text-gray-800 text-sm mt-0.5 block">{lot.material}</span>
                     </div>
                     <div className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/50">
-                      <span className="text-gray-400 block">{t('weight')}</span>
+                      <span className="text-gray-600 font-medium block">{t('weight')}</span>
                       <span className="font-bold text-gray-800 text-sm mt-0.5 block">{lot.weightKg} kg</span>
                     </div>
                     <div className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/50">
-                      <span className="text-gray-400 block">{t('location')}</span>
+                      <span className="text-gray-600 font-medium block">{t('location')}</span>
                       <span className="font-semibold text-gray-800 text-sm mt-0.5 block truncate">{lot.location}</span>
                     </div>
                     <div className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/50">
-                      <span className="text-gray-400 block">Rate / kg</span>
+                      <span className="text-gray-600 font-medium block">Rate / kg</span>
                       <span className="font-bold text-green-700 text-sm mt-0.5 block">
                         ₹{lot.offeredPricePerKg || lot.referencePricePerKg}/kg
                       </span>
@@ -171,8 +171,8 @@ export function IncomingLot({ onNavigate }: IncomingProps) {
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Truck className="w-3.5 h-3.5 text-gray-400" />
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Truck className="w-3.5 h-3.5 text-gray-600" />
                       <span>{lot.pickupAvailable ? 'Doorstep collection available' : 'Drop-off'}</span>
                     </div>
                     <Button size="sm" onClick={() => handleSelectLot(lot.lotId)}>

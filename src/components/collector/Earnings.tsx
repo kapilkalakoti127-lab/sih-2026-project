@@ -3,7 +3,11 @@ import { useApp } from '@/context/AppContext';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 
-export function Earnings() {
+interface EarningsProps {
+  onBack?: () => void;
+}
+
+export function Earnings({ onBack }: EarningsProps = {}) {
   const { t, lots, handovers } = useApp();
 
   // Compute earnings from lots that have been accepted, handed over, or completed
@@ -38,7 +42,18 @@ export function Earnings() {
 
   return (
     <div className="px-4 py-4 space-y-4">
-      <h1 className="text-xl font-bold text-gray-800">{t('earnings')}</h1>
+      <div className="flex items-center gap-2.5">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-black border border-gray-200 shadow-2xs"
+          >
+            <span>←</span>
+            <span>{t('back_btn')}</span>
+          </button>
+        )}
+        <h1 className="text-xl font-bold text-gray-800">{t('earnings')}</h1>
+      </div>
 
       {/* Total */}
       <Card className="bg-green-600 border-green-600 p-5">

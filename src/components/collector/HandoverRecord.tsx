@@ -149,13 +149,13 @@ export function HandoverRecord({ onDone }: HandoverProps) {
           <span className="text-[8px] font-mono text-gray-500 uppercase mt-0.5">VERIFIED</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-gray-400 uppercase">
+          <p className="text-xs font-semibold text-gray-600 uppercase">
             {t('handover_ref')}
           </p>
           <p className="font-bold text-gray-800 text-sm truncate font-mono">
             {currentHandover.handoverRef}
           </p>
-          <p className="text-xs text-green-600 mt-1">
+          <p className="text-xs text-green-700 font-medium mt-1">
             Show this QR / Ref to the authorized collector vehicle driver
           </p>
         </div>
@@ -177,7 +177,7 @@ export function HandoverRecord({ onDone }: HandoverProps) {
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                     event.completed
                       ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-400'
+                      : 'bg-gray-100 text-gray-600 border border-gray-300'
                   }`}
                 >
                   {event.completed ? (
@@ -196,7 +196,7 @@ export function HandoverRecord({ onDone }: HandoverProps) {
               </div>
               <p
                 className={`text-sm pt-1 ${
-                  event.completed ? 'text-gray-700 font-medium' : 'text-gray-400'
+                  event.completed ? 'text-gray-800 font-medium' : 'text-gray-500 font-medium'
                 }`}
               >
                 {event.label}

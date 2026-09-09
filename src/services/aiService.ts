@@ -15,6 +15,8 @@ export interface ImageClassificationResult {
   material_name: string;
   confidence: number;
   confidence_percentage: string;
+  is_low_confidence?: boolean;
+  warning?: string;
   probabilities: Record<string, number>;
   detected_features: string[];
   hazardous_elements: string[];
@@ -27,8 +29,12 @@ export interface ImageClassificationResult {
 
 export interface VoiceAssistResult {
   intent: 'create_lot' | 'query_price' | 'safety_help' | 'find_recycler';
-  detected_material: MaterialCategory;
-  detected_weight_kg: number;
+  detected_material?: MaterialCategory | null;
+  detected_weight_kg?: number | null;
+  fallback_material?: MaterialCategory;
+  fallback_weight_kg?: number;
+  requires_confirmation?: boolean;
+  missing_field?: 'weight' | 'material' | 'both' | null;
   unit_rate: number;
   estimated_total: number;
   spoken_response: string;
@@ -44,14 +50,17 @@ export interface PriceIntelligenceResult {
   cluster_name: string;
   benchmark_price_per_kg: number;
   authorized_fair_rate_per_kg: number;
+  average_market_price_per_kg: number;
   informal_dealer_rate_per_kg: number;
   formal_total_payout: number;
   informal_total_payout: number;
+  average_total_payout: number;
   extra_collector_earnings: number;
   percentage_gain: number;
   price_range: {
     min_per_kg: number;
     max_per_kg: number;
+    average_per_kg?: number;
     median_per_kg: number;
   };
   forecast_7_day: {
@@ -74,6 +83,9 @@ function getOfflineImageClassification(materialHint?: MaterialCategory): ImageCl
     LCD: ['Polarized Glass Matrix', 'Diffuser Layer', 'Thin Bezel'],
     Motor: ['Copper Wound Stator', 'Iron Lamination Stack', 'Rotor Spindle'],
     'Mixed Plastic': ['Molded ABS Enclosure', 'Polymer Ribs', 'Recycle Code'],
+    Metal: ['Metallic Luster', 'Heavy Machined Surface', 'High Density'],
+    'Chargers / Adapters': ['Molded Transformer Shell', 'Plug Pins', 'Insulated Cord'],
+    'Other E-Waste': ['Mixed Assembly Scrap', 'Composite Components', 'Small Appliances'],
   };
 
   const hazards: Record<MaterialCategory, { level: 'Low' | 'Moderate' | 'High' | 'Severe'; elements: string[] }> = {
@@ -83,18 +95,25 @@ function getOfflineImageClassification(materialHint?: MaterialCategory): ImageCl
     LCD: { level: 'Moderate', elements: ['Mercury cold-cathode lamps', 'Indium'] },
     Motor: { level: 'Low', elements: ['Insulation resin', 'Machine oil'] },
     'Mixed Plastic': { level: 'Low', elements: ['Flame retardant additives'] },
+    Metal: { level: 'Low', elements: ['Heavy metal traces', 'Machining lubricants'] },
+    'Chargers / Adapters': { level: 'Low', elements: ['Flame retardants', 'Internal capacitors'] },
+    'Other E-Waste': { level: 'Moderate', elements: ['Mixed heavy metal residues'] },
   };
+
+  const isLowConfidence = mat === 'Other E-Waste';
 
   return {
     material: mat,
     material_name: mat,
-    confidence: 0.93,
-    confidence_percentage: '93%',
-    probabilities: { [mat]: 0.93 },
-    detected_features: features[mat],
-    hazardous_elements: hazards[mat].elements,
-    hazard_level: hazards[mat].level,
-    recovered_materials: ['Copper', 'Gold', 'Silicon'],
+    confidence: isLowConfidence ? 0.45 : 0.88,
+    confidence_percentage: isLowConfidence ? '45%' : '88%',
+    is_low_confidence: isLowConfidence,
+    warning: isLowConfidence ? 'Low confidence — please verify material manually.' : undefined,
+    probabilities: { [mat]: isLowConfidence ? 0.45 : 0.88 },
+    detected_features: features[mat] || features['Other E-Waste'],
+    hazardous_elements: hazards[mat]?.elements || hazards['Other E-Waste'].elements,
+    hazard_level: hazards[mat]?.level || 'Moderate',
+    recovered_materials: ['Copper', 'Gold', 'Silicon', 'Aluminum'],
     suggested_price_per_kg: DEFAULT_PRICES[mat]?.referencePricePerKg ?? 250,
     safety_advisory: {
       en: 'Deliver intact to verified recyclers. Strictly avoid burning or acid extraction.',
@@ -113,8 +132,10 @@ function getOfflinePriceIntelligence(
   const base = DEFAULT_PRICES[material]?.referencePricePerKg ?? 250;
   const informal = Math.round(base * 0.8);
   const fairRate = Math.round(base * 1.08);
+  const avgRate = Math.round((base + informal + fairRate) / 3);
   const formalPayout = Math.round(weightKg * fairRate);
   const informalPayout = Math.round(weightKg * informal);
+  const avgPayout = Math.round(weightKg * avgRate);
 
   return {
     material,
@@ -123,14 +144,17 @@ function getOfflinePriceIntelligence(
     cluster_name: 'Pune Industrial Cluster',
     benchmark_price_per_kg: base,
     authorized_fair_rate_per_kg: fairRate,
+    average_market_price_per_kg: avgRate,
     informal_dealer_rate_per_kg: informal,
     formal_total_payout: formalPayout,
     informal_total_payout: informalPayout,
+    average_total_payout: avgPayout,
     extra_collector_earnings: formalPayout - informalPayout,
     percentage_gain: Math.round(((formalPayout - informalPayout) / Math.max(1, informalPayout)) * 100),
     price_range: {
       min_per_kg: Math.round(base * 0.9),
       max_per_kg: Math.round(base * 1.15),
+      average_per_kg: avgRate,
       median_per_kg: fairRate,
     },
     forecast_7_day: {
@@ -153,17 +177,35 @@ export async function classifyEwasteImage(
   imageFileOrBase64: File | string,
   materialHint?: MaterialCategory
 ): Promise<ImageClassificationResult> {
+  const fileName = typeof imageFileOrBase64 !== 'string' ? imageFileOrBase64.name : '';
+  let fallbackHint = materialHint;
+  if (!fallbackHint && fileName) {
+    const fn = fileName.toLowerCase();
+    if (fn.includes('pcb') || fn.includes('circuit') || fn.includes('motherboard')) fallbackHint = 'PCB';
+    else if (fn.includes('cable') || fn.includes('wire') || fn.includes('cord')) fallbackHint = 'Cable';
+    else if (fn.includes('battery') || fn.includes('cell') || fn.includes('lead') || fn.includes('lithium')) fallbackHint = 'Battery';
+    else if (fn.includes('lcd') || fn.includes('screen') || fn.includes('display') || fn.includes('monitor')) fallbackHint = 'LCD';
+    else if (fn.includes('motor') || fn.includes('stator') || fn.includes('coil') || fn.includes('pump')) fallbackHint = 'Motor';
+    else if (fn.includes('plastic') || fn.includes('casing') || fn.includes('cabinet')) fallbackHint = 'Mixed Plastic';
+    else if (fn.includes('metal') || fn.includes('iron') || fn.includes('steel') || fn.includes('aluminum')) fallbackHint = 'Metal';
+    else if (fn.includes('charger') || fn.includes('adapter') || fn.includes('plug')) fallbackHint = 'Chargers / Adapters';
+  }
+
   try {
     let response: Response;
     if (typeof imageFileOrBase64 === 'string') {
       response = await fetch(`${BACKEND_URL}/api/ai/classify-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageFileOrBase64 }),
+        body: JSON.stringify({ 
+          image: imageFileOrBase64,
+          filename: fallbackHint || fileName || ''
+        }),
       });
     } else {
       const formData = new FormData();
       formData.append('photo', imageFileOrBase64);
+      formData.append('filename', fileName || fallbackHint || '');
       response = await fetch(`${BACKEND_URL}/api/ai/classify-image`, {
         method: 'POST',
         body: formData,
@@ -178,7 +220,7 @@ export async function classifyEwasteImage(
     return data;
   } catch (error) {
     console.warn('AI Backend unreachable for image classification, using offline-first AI model:', error);
-    return getOfflineImageClassification(materialHint);
+    return getOfflineImageClassification(fallbackHint);
   }
 }
 
@@ -204,31 +246,59 @@ export async function processVoiceQuery(
     return data;
   } catch (error) {
     console.warn('AI Backend unreachable for voice assist, using offline rule engine:', error);
-    // Simple client-side fallback
-    let mat: MaterialCategory = 'PCB';
+    // Offline rule engine fallback
+    let detectedMat: MaterialCategory | null = null;
     const q = query.toLowerCase();
-    if (q.includes('battery') || q.includes('बैटरी') || q.includes('बॅटरी')) mat = 'Battery';
-    else if (q.includes('cable') || q.includes('तार') || q.includes('वायर')) mat = 'Cable';
-    else if (q.includes('lcd') || q.includes('स्क्रीन') || q.includes('कांच')) mat = 'LCD';
-    else if (q.includes('motor') || q.includes('मोटर') || q.includes('पंप')) mat = 'Motor';
-    else if (q.includes('plastic') || q.includes('प्लास्टिक')) mat = 'Mixed Plastic';
+    if (q.includes('battery') || q.includes('बैटरी') || q.includes('बॅटरी')) detectedMat = 'Battery';
+    else if (q.includes('cable') || q.includes('wire') || q.includes('तार') || q.includes('वायर')) detectedMat = 'Cable';
+    else if (q.includes('lcd') || q.includes('screen') || q.includes('स्क्रीन') || q.includes('कांच')) detectedMat = 'LCD';
+    else if (q.includes('motor') || q.includes('मोटर') || q.includes('पंप')) detectedMat = 'Motor';
+    else if (q.includes('plastic') || q.includes('प्लास्टिक') || q.includes('प्लॅस्टिक')) detectedMat = 'Mixed Plastic';
+    else if (q.includes('metal') || q.includes('लोहा') || q.includes('धातू') || q.includes('धातु')) detectedMat = 'Metal';
+    else if (q.includes('charger') || q.includes('adapter') || q.includes('चार्जर') || q.includes('अडॅप्टर')) detectedMat = 'Chargers / Adapters';
+    else if (q.includes('pcb') || q.includes('circuit') || q.includes('सर्किट') || q.includes('मदरबोर्ड') || q.includes('component') || q.includes('chip') || q.includes('ic') || q.includes('कंपोनेंट')) detectedMat = 'PCB';
 
-    const weightMatch = query.match(/(\d+(?:\.\d+)?)/);
-    const weightKg = weightMatch ? parseFloat(weightMatch[1]) : 5.0;
-    const rate = DEFAULT_PRICES[mat]?.referencePricePerKg ?? 250;
-    const total = Math.round(weightKg * rate);
+    // Normalize devanagari digits
+    const devDigits = '०१२३४५६७८९';
+    let qNorm = query;
+    for (let i = 0; i < devDigits.length; i++) {
+      qNorm = qNorm.split(devDigits[i]).join(String(i));
+    }
 
-    let spoken = `Got it! Detected ${weightKg} kg of ${mat}. Estimated value is ₹${total}.`;
-    if (language === 'hi') {
-      spoken = `समझ गया! ${weightKg} किलो ${mat} पहचाना गया। अनुमानित कीमत ₹${total} है।`;
+    const weightMatch = qNorm.match(/(\d+(?:\.\d+)?)/);
+    const detectedWeight: number | null = weightMatch ? parseFloat(weightMatch[1]) : null;
+
+    const requiresConfirmation = !detectedMat || !detectedWeight;
+    const missingField = !detectedMat && !detectedWeight ? 'both' : !detectedMat ? 'material' : !detectedWeight ? 'weight' : null;
+
+    const fallbackMat: MaterialCategory = detectedMat || 'Other E-Waste';
+    const fallbackWt: number = detectedWeight || 5.0;
+    const rate = DEFAULT_PRICES[fallbackMat]?.referencePricePerKg ?? 250;
+    const total = Math.round(fallbackWt * rate);
+
+    let spoken = `Got it! Detected ${fallbackWt} kg of ${fallbackMat}. Estimated value is ₹${total}.`;
+    if (requiresConfirmation) {
+      if (missingField === 'weight') {
+        spoken = language === 'hi' ? `${fallbackMat} पहचाना गया। कृपया वजन बताएं (उदा. 5 किलो)।` : language === 'mr' ? `${fallbackMat} ओळखले. कृपया वजन सांगा (उदा. ५ किलो).` : `Detected ${fallbackMat}. Please specify or confirm the weight.`;
+      } else if (missingField === 'material') {
+        spoken = language === 'hi' ? `${fallbackWt} किलो वजन दर्ज किया गया। कृपया सामग्री चुनें।` : language === 'mr' ? `${fallbackWt} किलो वजन नोंदवले. कृपया सामग्री निवडा.` : `Recorded ${fallbackWt} kg. Please select the material category.`;
+      } else {
+        spoken = language === 'hi' ? 'सामग्री और वजन स्पष्ट नहीं हो सके। कृपया दोबारा बोलें।' : language === 'mr' ? 'सामग्री आणि वजन स्पष्ट समजले नाही. पुन्हा बोला.' : 'Could not detect material or weight clearly. Please speak again.';
+      }
+    } else if (language === 'hi') {
+      spoken = `समझ गया! ${fallbackWt} किलो ${fallbackMat} पहचाना गया। अनुमानित कीमत ₹${total} है।`;
     } else if (language === 'mr') {
-      spoken = `समजले! ${weightKg} किलो ${mat} नोंदवले. अंदाजे रक्कम ₹${total} मिळेल.`;
+      spoken = `समजले! ${fallbackWt} किलो ${fallbackMat} नोंदवले. अंदाजे रक्कम ₹${total} मिळेल.`;
     }
 
     return {
       intent: 'create_lot',
-      detected_material: mat,
-      detected_weight_kg: weightKg,
+      detected_material: detectedMat,
+      detected_weight_kg: detectedWeight,
+      fallback_material: fallbackMat,
+      fallback_weight_kg: fallbackWt,
+      requires_confirmation: requiresConfirmation,
+      missing_field: missingField,
       unit_rate: rate,
       estimated_total: total,
       spoken_response: spoken,

@@ -68,7 +68,17 @@ export function CollectorHome({ onNavigate }: HomeProps) {
   };
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="relative min-h-[calc(100vh-140px)]">
+      {/* Subtle, professional low-opacity e-waste / electronics recycling background watermark */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-[0.035] mix-blend-multiply z-0"
+        style={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1518770660439-4636190af475?auto=compress&cs=tinysrgb&w=1200")',
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 px-4 py-4 space-y-4">
       {/* Greeting & Collector Identity Cardlet */}
       <div className="flex items-center justify-between">
         <div>
@@ -165,7 +175,7 @@ export function CollectorHome({ onNavigate }: HomeProps) {
           </div>
           <div className="flex items-center gap-2 truncate">
             <span className="text-xl font-black text-gray-800 truncate">
-              {recentLot ? recentLot.lotId : 'None'}
+              {recentLot ? recentLot.lotId : '0 Lots'}
             </span>
             {recentLot && (
               <Badge variant={recentLot.status === 'Completed' ? 'success' : 'info'}>
@@ -180,8 +190,20 @@ export function CollectorHome({ onNavigate }: HomeProps) {
         </Card>
       </div>
 
-      {/* Active Lot Card */}
-      {ongoingLot && (
+      {/* Active Lot Card or Fresh Account Welcome */}
+      {lots.length === 0 ? (
+        <Card className="p-5 border-green-200 bg-gradient-to-br from-green-50/80 to-emerald-50/40 text-center space-y-2.5">
+          <div className="w-12 h-12 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center mx-auto shadow-2xs">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-base">Welcome to Your Fresh Dashboard!</h3>
+            <p className="text-xs text-gray-600 max-w-md mx-auto mt-1 leading-relaxed">
+              Your collection ledger is clean and ready. Tap <strong>"Sell E-Waste"</strong> above to take a photo of your scrap, get instant AI categorization and price intelligence, and match with verified CPCB recyclers.
+            </p>
+          </div>
+        </Card>
+      ) : ongoingLot ? (
         <Card onClick={handleOpenOngoing} className="cursor-pointer hover:border-green-300 transition-colors p-4">
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
@@ -220,10 +242,10 @@ export function CollectorHome({ onNavigate }: HomeProps) {
                 {(ongoingLot.totalOfferValue || ongoingLot.estimatedValue).toLocaleString('en-IN')}
               </p>
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 shrink-0" />
+            <ArrowRight className="w-5 h-5 text-gray-600 shrink-0" />
           </div>
         </Card>
-      )}
+      ) : null}
 
       {/* Safety Reminder */}
       <Card className="bg-amber-50 border-amber-200 p-4">
@@ -254,6 +276,7 @@ export function CollectorHome({ onNavigate }: HomeProps) {
           </p>
         </Card>
       )}
+      </div>
     </div>
   );
 }

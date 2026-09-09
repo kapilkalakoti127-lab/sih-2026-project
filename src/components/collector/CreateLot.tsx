@@ -56,6 +56,9 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
     LCD: '🖥️',
     Motor: '⚙️',
     'Mixed Plastic': '🧴',
+    Metal: '🔩',
+    'Chargers / Adapters': '⚡',
+    'Other E-Waste': '📦',
   };
 
   const currentPhotoUrl = customPhotoUrl || MATERIAL_PHOTOS[selectedMaterial] || DEMO_PHOTO_URL;
@@ -76,18 +79,28 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
     setCustomPhotoUrl(localUrl);
 
     try {
-      const result = await classifyEwasteImage(file, selectedMaterial);
+      const result = await classifyEwasteImage(file);
       setAiVisionResult(result);
       if (result.material) {
         setSelectedMaterial(result.material);
-        // Play brief localized voice feedback
-        const speechMsg =
-          language === 'hi'
-            ? `एआई ने पहचाना: ${result.material_name}, शुद्धता ${result.confidence_percentage}`
-            : language === 'mr'
-            ? `एआय ने ओळखले: ${result.material_name}, खात्री ${result.confidence_percentage}`
-            : `AI recognized ${result.material_name} with ${result.confidence_percentage} confidence`;
-        speak(speechMsg, language);
+        // Play localized voice feedback with low-confidence awareness
+        if (result.is_low_confidence || result.confidence < 0.70) {
+          const warnSpeech =
+            language === 'hi'
+              ? `पहचाना गया: ${result.material_name}, लेकिन सटीकता कम है। कृपया जांचें।`
+              : language === 'mr'
+              ? `ओळखले: ${result.material_name}, पण खात्री कमी आहे. कृपया तपासा.`
+              : `Detected: ${result.material_name}, but confidence is low. Please verify manually.`;
+          speak(warnSpeech, language);
+        } else {
+          const speechMsg =
+            language === 'hi'
+              ? `एआई ने पहचाना: ${result.material_name}, शुद्धता ${result.confidence_percentage}`
+              : language === 'mr'
+              ? `एआय ने ओळखले: ${result.material_name}, खात्री ${result.confidence_percentage}`
+              : `AI recognized ${result.material_name} with ${result.confidence_percentage} confidence`;
+          speak(speechMsg, language);
+        }
       }
     } catch (err) {
       console.error('AI classification error:', err);
@@ -167,6 +180,9 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
       }
       if (result.detected_weight_kg) {
         setWeightKg(result.detected_weight_kg);
+      }
+      if (result.requires_confirmation) {
+        setVoiceNotice(result.spoken_response);
       }
       // Speak AI response aloud
       if (result.spoken_response) {
@@ -282,7 +298,7 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
             <div>
               <h2 className="text-xl font-bold text-gray-800">{t('photograph')}</h2>
               <p className="text-xs text-gray-500">
-                Eco-Link AI will automatically identify the e-waste category.
+                Kabadiwala Connect AI will automatically identify the e-waste category.
               </p>
             </div>
             {!online && (
@@ -310,7 +326,7 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
                     <div className="w-full h-1 bg-green-400 shadow-[0_0_15px_#22c55e] animate-pulse absolute top-1/2 -translate-y-1/2" />
                     <ScanLine className="w-10 h-10 text-green-400 animate-spin mb-2" />
                     <span className="text-xs font-bold tracking-wider uppercase text-green-300">
-                      Eco-Link Vision AI Analyzing...
+                      Kabadiwala Connect Vision AI Analyzing...
                     </span>
                     <span className="text-[10px] text-white/80 mt-1">
                       Detecting circuitry, copper traces & polymers
@@ -350,18 +366,32 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
 
           {/* AI Detection Preview Card if photo taken */}
           {photoTaken && (
-            <Card className="p-3.5 bg-cyan-50/80 border-cyan-200 space-y-2">
+            <Card className="p-3.5 bg-cyan-50/80 border-cyan-200 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-cyan-600" />
                   <span className="text-xs font-bold text-cyan-950">
-                    AI Auto-Classified: {selectedMaterial}
+                    AI Auto-Classified: {t(selectedMaterial)}
                   </span>
                 </div>
-                <span className="text-[11px] font-bold font-mono bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
+                <span
+                  className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                    aiVisionResult?.is_low_confidence || (aiVisionResult?.confidence && aiVisionResult.confidence < 0.70)
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                      : 'bg-cyan-100 text-cyan-800'
+                  }`}
+                >
                   {aiVisionResult?.confidence_percentage || '94% Match'}
                 </span>
               </div>
+
+              {/* Clear warning when confidence is low or unclassified */}
+              {(aiVisionResult?.is_low_confidence || (aiVisionResult?.confidence && aiVisionResult.confidence < 0.70) || selectedMaterial === 'Other E-Waste') && (
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{t('low_confidence_warning')}</span>
+                </div>
+              )}
 
               {aiVisionResult?.detected_features && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -384,7 +414,7 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
                 >
                   <ImageIcon className="w-3.5 h-3.5" /> {t('retake_photo')}
                 </button>
-                <span className="text-gray-500 text-[11px]">
+                <span className="text-gray-600 font-medium text-[11px]">
                   Estimated ₹{prices[selectedMaterial]?.referencePricePerKg ?? 320}/kg
                 </span>
               </div>
@@ -409,6 +439,13 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
             <h2 className="text-xl font-bold text-gray-800">{t('select_material')}</h2>
             <Badge variant="info">AI Verified</Badge>
           </div>
+
+          {(aiVisionResult?.is_low_confidence || (aiVisionResult?.confidence && aiVisionResult.confidence < 0.70) || selectedMaterial === 'Other E-Waste') && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{t('low_confidence_warning')} Tap the correct category below to update.</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             {MATERIAL_CATEGORIES.map((mat) => {
@@ -550,25 +587,47 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
             />
           </div>
 
+          <Card className="bg-emerald-50 border-emerald-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                  {t('ai_average_price')}
+                </span>
+                <span className="text-[11px] text-emerald-800">
+                  Regional cluster median benchmark
+                </span>
+              </div>
+              <span className="text-base font-black text-emerald-900">
+                ₹{Math.round(currentRefPrice * 0.95)}/kg
+              </span>
+            </div>
+          </Card>
+
           <Card className="bg-green-50 border-green-200">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-gray-700">
-                {t(selectedMaterial)} {t('reference_price')}
-              </span>
+              <div>
+                <span className="text-sm font-bold text-gray-800">
+                  {t(selectedMaterial)} {t('reference_price')}
+                </span>
+                <span className="text-[11px] text-green-800 block">
+                  Authorized recycler direct rate
+                </span>
+              </div>
               <span className="text-lg font-black text-green-700">
                 ₹{currentRefPrice}/kg
               </span>
             </div>
           </Card>
 
-          <Card className="bg-green-600 border-green-600 text-white shadow-sm">
+          <Card className="bg-green-700 border-green-700 text-white shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-green-100 block">
+                <span className="text-xs font-bold text-white block">
                   {t('estimated_value')}
                 </span>
-                <span className="text-xs text-green-200">
-                  {weightKg} kg × ₹{currentRefPrice}/kg
+                <span className="text-xs text-green-100 font-medium">
+                  {weightKg} kg × ₹{currentRefPrice}/kg (Avg: ₹{Math.round(weightKg * currentRefPrice * 0.95).toLocaleString('en-IN')})
                 </span>
               </div>
               <span className="text-2xl font-black text-white">
@@ -578,7 +637,7 @@ export function CreateLot({ onComplete, onBack }: CreateLotProps) {
           </Card>
 
           {!online && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+            <div className="p-3 rounded-xl bg-amber-100 border border-amber-300 text-xs font-semibold text-amber-900">
               Offline Mode active: Lot will be saved locally and submitted to recyclers upon reconnecting.
             </div>
           )}

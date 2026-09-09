@@ -47,13 +47,15 @@ export function LotDetail({ onBack }: LotDetailProps) {
 
   return (
     <div className="px-4 py-4 space-y-4">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        {t('back')}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-900 font-black text-xs transition-colors shadow-2xs border border-gray-300"
+        >
+          <span className="text-base font-black">←</span>
+          <span>{t('back_btn')}</span>
+        </button>
+      </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

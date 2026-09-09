@@ -8,9 +8,10 @@ import type { CollectorScreen, LotStatus } from '@/types';
 
 interface MyLotProps {
   onNavigate: (screen: CollectorScreen) => void;
+  onBack?: () => void;
 }
 
-export function MyLot({ onNavigate }: MyLotProps) {
+export function MyLot({ onNavigate, onBack }: MyLotProps) {
   const { t, lots, setActiveLotId } = useApp();
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
@@ -49,7 +50,18 @@ export function MyLot({ onNavigate }: MyLotProps) {
   return (
     <div className="px-4 py-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">{t('my_lot')}</h1>
+        <div className="flex items-center gap-2.5">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-black border border-gray-200 shadow-2xs"
+            >
+              <span>←</span>
+              <span>{t('back_btn')}</span>
+            </button>
+          )}
+          <h1 className="text-xl font-bold text-gray-800">{t('my_lot')}</h1>
+        </div>
         <Button
           size="sm"
           variant="outline"

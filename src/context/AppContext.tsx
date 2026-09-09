@@ -26,6 +26,23 @@ import {
   MATERIAL_PHOTOS,
   demoCollectorProfile,
 } from '@/data/mockData';
+import {
+  fetchLots,
+  fetchOffers,
+  fetchHandovers,
+  fetchRecyclers,
+  fetchCollectorProfile,
+  createLotApi,
+  sendOfferApi,
+  acceptOfferApi,
+  declineOfferApi,
+  completeHandoverApi,
+  createCollectorProfileApi,
+  createRecyclerApi,
+  updateCollectorProfileApi,
+  updateRecyclerApi,
+  resetBackendDemo,
+} from '@/services/api';
 
 interface CreateLotInput {
   material: MaterialCategory;
@@ -67,6 +84,8 @@ interface AppState {
   updateRecyclerProfile: (id: string, updates: Partial<Recycler>) => void;
   collectorProfile: CollectorProfile;
   updateCollectorProfile: (updates: Partial<CollectorProfile>) => void;
+  registerCollector: (data: Partial<CollectorProfile>, freshData?: boolean) => Promise<CollectorProfile>;
+  registerRecycler: (data: Partial<Recycler>) => Promise<Recycler>;
   bridgeNotification: string | null;
   clearNotification: () => void;
 
@@ -95,14 +114,8 @@ const STORAGE_KEY = 'ecolink_state_v2';
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<Role>(() => {
-    try {
-      const saved = localStorage.getItem('ecolink_role');
-      return (saved as Role) || null;
-    } catch {
-      return null;
-    }
-  });
+  // Always open the main menu page first when the app loads
+  const [role, setRole] = useState<Role>(null);
 
   const [language, setLanguage] = useState<Language>(() => {
     try {
@@ -119,7 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lots, setLots] = useState<MaterialLot[]>(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_lots`);
-      if (saved) return JSON.parse(saved);
+      if (saved !== null) return JSON.parse(saved);
     } catch (e) {
       console.error('Failed to load lots from localStorage', e);
     }
@@ -129,15 +142,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeLotId, setActiveLotId] = useState<string | null>(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_activeLotId`);
-      if (saved) return saved;
+      if (saved !== null) return saved || null;
     } catch {}
-    return INITIAL_SEED_LOTS[0]?.lotId ?? null;
+    return null;
   });
 
   const [offers, setOffers] = useState<Record<string, Offer>>(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_offers`);
-      if (saved) return JSON.parse(saved);
+      if (saved !== null) return JSON.parse(saved);
     } catch {}
     return INITIAL_SEED_OFFERS;
   });
@@ -145,7 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [handovers, setHandovers] = useState<Record<string, HandoverRecord>>(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_handovers`);
-      if (saved) return JSON.parse(saved);
+      if (saved !== null) return JSON.parse(saved);
     } catch {}
     return INITIAL_SEED_HANDOVERS;
   });
@@ -170,6 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const activeRecycler =
     recyclers.find((r) => r.id === activeRecyclerId) || recyclers[0] || AUTHORIZED_RECYCLERS[0];
 
+  // Update profiles
   const updateRecyclerProfile = (id: string, updates: Partial<Recycler>) => {
     setRecyclers((prev) => {
       const next = prev.map((r) => (r.id === id ? { ...r, ...updates } : r));
@@ -178,6 +192,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } catch {}
       return next;
     });
+    updateRecyclerApi(id, updates).catch((err) => console.warn('Sync recycler profile err:', err));
   };
 
   const [collectorProfile, setCollectorProfile] = useState<CollectorProfile>(() => {
@@ -196,15 +211,168 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } catch {}
       return next;
     });
+    updateCollectorProfileApi(updates).catch((err) => console.warn('Sync collector profile err:', err));
   };
 
-  // Persist role & language
+  const registerCollector = async (
+    data: Partial<CollectorProfile>,
+    freshData: boolean = true
+  ): Promise<CollectorProfile> => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const newProfile: CollectorProfile = {
+      id: data.id || `KAB-PUN-${randomSuffix}`,
+      name: data.name || 'New Scrap Collector',
+      phone: data.phone || '+91 98000 00000',
+      location: data.location || 'Pune City',
+      zone: data.zone || 'Zone-Central',
+      upiId: data.upiId || `${(data.name || 'collector').toLowerCase().replace(/\s+/g, '')}@okaxis`,
+      registrationDate: new Date().toISOString().split('T')[0],
+      kycStatus: 'Verified',
+      badgeTitle: 'Registered Green Collector',
+      totalLotsCompleted: 0,
+    };
+
+    setCollectorProfile(newProfile);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_collector_profile`, JSON.stringify(newProfile));
+    } catch {}
+
+    if (freshData) {
+      // Clear lots and offers for a fresh, clean account experience
+      setLots([]);
+      setOffers({});
+      setHandovers({});
+      setActiveLotId(null);
+      try {
+        localStorage.setItem(`${STORAGE_KEY}_lots`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEY}_offers`, JSON.stringify({}));
+        localStorage.setItem(`${STORAGE_KEY}_handovers`, JSON.stringify({}));
+        localStorage.removeItem(`${STORAGE_KEY}_activeLotId`);
+      } catch {}
+    }
+
+    setBridgeNotification(`Welcome ${newProfile.name}! New collector account ${newProfile.id} created successfully.`);
+    try {
+      await createCollectorProfileApi({ ...newProfile, resetLotsForNewUser: freshData });
+    } catch (err) {
+      console.warn('Sync new collector account err:', err);
+    }
+
+    return newProfile;
+  };
+
+  const registerRecycler = async (data: Partial<Recycler>): Promise<Recycler> => {
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const newRecycler: Recycler = {
+      id: data.id || `REC-FAC-${randomSuffix}`,
+      name: data.name || 'New Authorized Recycling Facility',
+      authorized: true,
+      location: data.location || 'Bhosari MIDC, Pune',
+      distanceKm: data.distanceKm ?? 8.5,
+      proximityKey: data.proximityKey || 'near',
+      materialsAccepted: data.materialsAccepted || [
+        'PCB',
+        'Cable',
+        'Battery',
+        'LCD',
+        'Motor',
+        'Mixed Plastic',
+        'Metal',
+        'Chargers / Adapters',
+        'Other E-Waste',
+      ],
+      offeredPricePerKg: data.offeredPricePerKg ?? 340,
+      pickupAvailable: true,
+      matchScore: 98,
+      eprLicense: data.eprLicense || `CPCB-EPR-MH-${new Date().getFullYear()}-${randomSuffix}`,
+      contactPerson: data.contactPerson || 'Facility Officer',
+      phone: data.phone || '+91 98220 00000',
+      notes: data.notes || 'State-of-the-art CPCB Authorized E-Waste Processing Plant',
+    };
+
+    setRecyclers((prev) => {
+      const next = [newRecycler, ...prev.filter((r) => r.id !== newRecycler.id)];
+      try {
+        localStorage.setItem(`${STORAGE_KEY}_recyclers`, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    setActiveRecyclerId(newRecycler.id);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_activeRecyclerId`, newRecycler.id);
+    } catch {}
+
+    setBridgeNotification(`Facility ${newRecycler.name} registered and activated under license ${newRecycler.eprLicense}.`);
+    try {
+      await createRecyclerApi(newRecycler);
+    } catch (err) {
+      console.warn('Sync new recycler facility err:', err);
+    }
+
+    return newRecycler;
+  };
+
+  // Initial fetch and continuous real-time sync from backend REST API
+  useEffect(() => {
+    let mounted = true;
+    async function loadBackendData() {
+      try {
+        const [lotsData, recyclersData, profileData, offersData, handoversData] = await Promise.allSettled([
+          fetchLots(),
+          fetchRecyclers(),
+          fetchCollectorProfile(),
+          fetchOffers(),
+          fetchHandovers(),
+        ]);
+
+        if (!mounted) return;
+
+        if (lotsData.status === 'fulfilled') {
+          setLots(lotsData.value);
+          try {
+            localStorage.setItem(`${STORAGE_KEY}_lots`, JSON.stringify(lotsData.value));
+          } catch {}
+        }
+        if (recyclersData.status === 'fulfilled' && recyclersData.value.length > 0) {
+          setRecyclers(recyclersData.value);
+        }
+        if (profileData.status === 'fulfilled' && profileData.value) {
+          setCollectorProfile(profileData.value);
+        }
+        if (offersData.status === 'fulfilled') {
+          setOffers(offersData.value);
+          try {
+            localStorage.setItem(`${STORAGE_KEY}_offers`, JSON.stringify(offersData.value));
+          } catch {}
+        }
+        if (handoversData.status === 'fulfilled') {
+          setHandovers(handoversData.value);
+          try {
+            localStorage.setItem(`${STORAGE_KEY}_handovers`, JSON.stringify(handoversData.value));
+          } catch {}
+        }
+      } catch (err) {
+        console.warn('Backend sync failed, staying offline-first:', err);
+      }
+    }
+
+    loadBackendData();
+    // Poll every 3 seconds to keep collector lots and recycler portal in continuous sync
+    const interval = setInterval(loadBackendData, 3000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Always keep menu page as the initial landing screen
   useEffect(() => {
     try {
-      if (role) localStorage.setItem('ecolink_role', role);
-      else localStorage.removeItem('ecolink_role');
+      localStorage.removeItem('ecolink_role');
     } catch {}
-  }, [role]);
+  }, []);
 
   useEffect(() => {
     try {
@@ -391,6 +559,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveLotId(lotId);
     setBridgeNotification(`New Lot ${lotId} (${weightKg} kg ${material}) registered on the digital bridge!`);
 
+    // Sync to SQLite backend asynchronously
+    createLotApi(newLot).catch((err) => console.warn('Create lot API sync err:', err));
+    sendOfferApi(initialOffer).catch((err) => console.warn('Initial offer sync err:', err));
+
     return newLot;
   };
 
@@ -437,6 +609,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )
     );
     setBridgeNotification(`Recycler ${recycler.name} offered ₹${pricePerKg}/kg on Lot ${lotId}!`);
+    sendOfferApi(updatedOffer).catch((err) => console.warn('Send offer API sync err:', err));
   };
 
   const acceptOffer = (lotId: string) => {
@@ -490,6 +663,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )
     );
     setBridgeNotification(`Collector accepted offer for Lot ${lotId}! Ready for authorized pickup.`);
+    acceptOfferApi(lotId).catch((err) => console.warn('Accept offer API sync err:', err));
   };
 
   const declineOffer = (lotId: string) => {
@@ -497,6 +671,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       prev[lotId] ? { ...prev, [lotId]: { ...prev[lotId], status: 'declined' } } : prev
     );
     setBridgeNotification(`Offer declined for Lot ${lotId}.`);
+    declineOfferApi(lotId).catch((err) => console.warn('Decline offer API sync err:', err));
   };
 
   const completeHandover = (
@@ -580,6 +755,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBridgeNotification(
       `Handover for ${lotId} confirmed! ₹${calculatedFinalValue.toLocaleString('en-IN')} paid via ${paymentMethod}. Form-6 manifest created.`
     );
+
+    // Sync to SQLite backend asynchronously
+    completeHandoverApi(lotId, {
+      paymentMethod,
+      verifiedWeightKg: verifiedWeight,
+      vehicleNumber: options.vehicleNumber || 'MH-12-QX-4891',
+      driverName: options.driverName || 'Ramesh Shinde',
+      upiId: options.upiId || collectorProfile.upiId || 'kabadiwala@upi',
+      finalValue: calculatedFinalValue,
+    }).catch((err) => console.warn('Complete handover API sync err:', err));
   };
 
   const resetDemo = () => {
@@ -598,6 +783,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveRecyclerId(AUTHORIZED_RECYCLERS[0]?.id || 'REC-002');
     setActiveLotId(INITIAL_SEED_LOTS[0]?.lotId ?? null);
     setBridgeNotification('Demo reset to clean baseline state.');
+    resetBackendDemo().catch((err) => console.warn('Reset backend demo err:', err));
   };
 
   return (
@@ -624,6 +810,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateRecyclerProfile,
         collectorProfile,
         updateCollectorProfile,
+        registerCollector,
+        registerRecycler,
         bridgeNotification,
         clearNotification,
         createLot,

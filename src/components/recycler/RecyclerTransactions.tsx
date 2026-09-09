@@ -16,9 +16,11 @@ export function RecyclerTransactions() {
       const handover = handovers[lot.lotId];
       const amount = handover?.finalValue ?? lot.totalOfferValue ?? lot.estimatedValue;
       const isPaid = lot.status === 'Completed' || handover?.paymentStatus === 'Paid';
-      const date = lot.completedAt
+      const date = lot.completedAt && !isNaN(new Date(lot.completedAt).getTime())
         ? new Date(lot.completedAt).toLocaleDateString('en-IN')
-        : new Date(lot.createdAt).toLocaleDateString('en-IN');
+        : lot.createdAt && !isNaN(new Date(lot.createdAt).getTime())
+        ? new Date(lot.createdAt).toLocaleDateString('en-IN')
+        : 'Recent';
 
       return {
         lotId: lot.lotId,
